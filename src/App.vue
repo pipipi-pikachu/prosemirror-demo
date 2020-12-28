@@ -1,12 +1,24 @@
 <template>
   <div class="toolbar">
-    <button class="btn" @click="deleteSelection()">删除选区</button>
+    <button class="btn" @click="setBold()">加粗</button>
+    <button class="btn" @click="setItalics()">斜体</button>
+    <button class="btn" @click="setUnderline()">下划线</button>
+    <button class="btn" @click="setStrikeThrough()">删除线</button>
+    <button class="btn" @click="setSubscript()">下标</button>
+    <button class="btn" @click="setSuperscript()">上标</button>
+    <button class="btn" @click="setForecolor()">颜色</button>
+    <button class="btn" @click="setBackcolor()">高亮</button>
+    <button class="btn" @click="setFontsize()">字号</button>
+    <button class="btn" @click="setFontname()">字体</button>
+    <button class="btn" @click="setBulletList()">无序列表</button>
+    <button class="btn" @click="setOrderedList()">有序列表</button>
+    <button class="btn" @click="setBlockquote()">引用块</button>
+    <button class="btn" @click="setCode()">行内代码</button>
     <button class="btn" @click="clear()">清除样式</button>
-    <button class="btn" @click="setColor()">设置颜色</button>
   </div>
 
   <div class="prosemirror-editor"></div>
-  <div class="content"></div>
+  <div class="content" style="display: none;">9999999999999999999999999</div>
 </template>
 
 <script>
@@ -15,7 +27,8 @@ import { defineComponent, onMounted } from 'vue'
 import { EditorState } from 'prosemirror-state'
 import { EditorView } from 'prosemirror-view'
 import { Schema, DOMParser } from 'prosemirror-model'
-import { wrapIn } from 'prosemirror-commands'
+import { wrapIn, toggleMark, setBlockType } from 'prosemirror-commands'
+import { wrapInList } from 'prosemirror-schema-list'
 
 import { buildPlugins } from './plugins/index'
 import { schemaNodes, schemaMarks } from './schema/index'
@@ -38,31 +51,124 @@ export default defineComponent({
       })
     }
 
-    const deleteSelection = () => {
-      if(view.state.selection.empty) return false
-      if(view.dispatch) view.dispatchs(view.state.tr.deleteSelection())
-      view.focus()
-      return true
-    }
-
     const clear = () => {
       if(view.state.selection.empty) return false
       const { $from, $to } = view.state.selection
-      if(view.dispatch) view.dispatch(view.state.tr.removeMark($from.pos, $to.pos, null))
+      view.dispatch(view.state.tr.removeMark($from.pos, $to.pos, null))
       view.focus()
       return true
     }
 
-    const setColor = () => {
+    const setForecolor = () => {
+      const mark = view.state.schema.marks.forecolor.create({ color: 'red' })
+      const { $from, $to } = view.state.selection
+      view.dispatch(view.state.tr.addMark($from.pos, $to.pos, mark))
+      view.focus()
+      return true
+    }
+
+    const setBackcolor = () => {
+      const mark = view.state.schema.marks.backcolor.create({ backcolor: 'yellow' })
+      const { $from, $to } = view.state.selection
+      view.dispatch(view.state.tr.addMark($from.pos, $to.pos, mark))
+      view.focus()
+      return true
+    }
+
+    const setFontsize = () => {
+      const mark = view.state.schema.marks.fontsize.create({ fontsize: '22px' })
+      const { $from, $to } = view.state.selection
+      view.dispatch(view.state.tr.addMark($from.pos, $to.pos, mark))
+      view.focus()
+      return true
+    }
+
+    const setFontname = () => {
+      const mark = view.state.schema.marks.fontname.create({ fontname: '宋体' })
+      const { $from, $to } = view.state.selection
+      view.dispatch(view.state.tr.addMark($from.pos, $to.pos, mark))
+      view.focus()
+      return true
+    }
+
+    const setBold = () => {
+      toggleMark(view.state.schema.marks.strong)(view.state, view.dispatch)
+      view.focus()
+      return true
+    }
+
+    const setItalics = () => {
+      toggleMark(view.state.schema.marks.em)(view.state, view.dispatch)
+      view.focus()
+      return true
+    }
+
+    const setUnderline = () => {
+      toggleMark(view.state.schema.marks.underline)(view.state, view.dispatch)
+      view.focus()
+      return true
+    }
+
+    const setStrikeThrough = () => {
+      toggleMark(view.state.schema.marks.strikethrough)(view.state, view.dispatch)
+      view.focus()
+      return true
+    }
+
+    const setSubscript = () => {
+      toggleMark(view.state.schema.marks.subscript)(view.state, view.dispatch)
+      view.focus()
+      return true
+    }
+
+    const setSuperscript = () => {
+      toggleMark(view.state.schema.marks.superscript)(view.state, view.dispatch)
+      view.focus()
+      return true
+    }
+
+    const setBulletList = () => {
+      wrapInList(view.state.schema.nodes.bullet_list)(view.state, view.dispatch)
+      view.focus()
+      return true
+    }
+
+    const setOrderedList = () => {
+      wrapInList(view.state.schema.nodes.ordered_list)(view.state, view.dispatch)
+      view.focus()
+      return true
+    }
+
+    const setBlockquote = () => {
+      wrapIn(view.state.schema.nodes.blockquote)(view.state, view.dispatch)
+      view.focus()
+      return true
+    }
+
+    const setCode = () => {
+      toggleMark(view.state.schema.marks.code)(view.state, view.dispatch)
+      view.focus()
       return true
     }
 
     onMounted(initEditor)
 
     return {
-      deleteSelection,
+      setBold,
+      setItalics,
+      setUnderline,
+      setStrikeThrough,
+      setSubscript,
+      setSuperscript,
+      setForecolor,
+      setBackcolor,
+      setFontsize,
+      setFontname,
+      setBulletList,
+      setOrderedList,
+      setBlockquote,
+      setCode,
       clear,
-      setColor,
     }
   },
 })

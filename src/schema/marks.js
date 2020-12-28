@@ -39,13 +39,72 @@ const underline = {
   }],
 }
 
-const color_red = {
+const forecolor = {
+  attrs: {
+    color: {},
+  },
   parseDOM: [
-    { style: 'color:red' },
+    {
+      style: 'color',
+      getAttrs: color => {
+        return color ? { color } : null
+      }
+    },
   ],
-  toDOM: () => ['span', {
-    style: 'color:red',
-  }],
+  toDOM: mark => {
+    return ['span', { style: `color: ${mark.attrs.color};` }]
+  },
+}
+
+const backcolor = {
+  attrs: {
+    backcolor: {},
+  },
+  parseDOM: [
+    {
+      style: 'background-color',
+      getAttrs: backcolor => {
+        return backcolor ? { backcolor } : null
+      }
+    },
+  ],
+  toDOM: mark => {
+    return ['span', { style: `background-color: ${mark.attrs.backcolor};` }]
+  },
+}
+
+const fontsize = {
+  attrs: {
+    fontsize: {},
+  },
+  parseDOM: [
+    {
+      style: 'font-size',
+      getAttrs: fontsize => {
+        return fontsize ? { fontsize } : null
+      }
+    },
+  ],
+  toDOM: mark => {
+    return ['span', { style: `font-size: ${mark.attrs.fontsize};` }]
+  },
+}
+
+const fontname = {
+  attrs: {
+    fontname: {},
+  },
+  parseDOM: [
+    {
+      style: 'font-family',
+      getAttrs: fontname => {
+        return fontname ? { fontname } : null
+      }
+    },
+  ],
+  toDOM: mark => {
+    return ['span', { style: `font-family: ${mark.attrs.fontname};` }]
+  },
 }
 
 export default {
@@ -54,5 +113,8 @@ export default {
   superscript,
   strikethrough,
   underline,
-  color_red,
+  forecolor,
+  backcolor,
+  fontsize,
+  fontname,
 }
