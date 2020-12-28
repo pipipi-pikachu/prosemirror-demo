@@ -5,7 +5,6 @@ import {
   joinDown,
 } from 'prosemirror-commands'
 
-import { wrapInList } from 'prosemirror-schema-list'
 import { undo, redo } from 'prosemirror-history'
 import { undoInputRule } from 'prosemirror-inputrules'
 
@@ -33,9 +32,6 @@ export const buildKeymap = schema => {
   
   bind('Ctrl-d', toggleMark(schema.marks.strikethrough))
   bind('Ctrl-D', toggleMark(schema.marks.strikethrough))
-
-  bind('Shift-Ctrl-u', wrapInList(schema.nodes.bullet_list))
-  bind('Shift-Ctrl-o', wrapInList(schema.nodes.ordered_list))
 
   return keys
 }

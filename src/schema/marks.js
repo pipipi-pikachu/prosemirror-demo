@@ -39,10 +39,20 @@ const underline = {
   }],
 }
 
+const color_red = {
+  parseDOM: [
+    { style: 'color:red' },
+  ],
+  toDOM: () => ['span', {
+    style: 'color:red',
+  }],
+}
+
 export default {
   ...marks,
   subscript,
   superscript,
   strikethrough,
   underline,
+  color_red,
 }

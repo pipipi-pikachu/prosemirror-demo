@@ -1,39 +1,21 @@
 <template>
-  <div class="prosemirror-editor"></div>
-  <div class="content"></div>
-
-  <!-- <div class="quill-editor">
-    <div>111111111111111111111111111</div>
+  <div class="toolbar">
+    <button class="btn" @click="deleteSelection()">删除选区</button>
+    <button class="btn" @click="clear()">清除样式</button>
+    <button class="btn" @click="setColor()">设置颜色</button>
   </div>
 
-  <div class="menu">
-    <button @click="editor.format('font', '宋体')">字体</button>
-    <button @click="editor.format('size', 'large')">字号</button>
-    <button @click="editor.format('color', 'red')">颜色</button>
-    <button @click="editor.format('background', '#eee')">高亮</button>
-    <button @click="editor.format('italic', !editor.getFormat().italic)">斜体</button>
-    <button @click="editor.format('bold', !editor.getFormat().bold)">加粗</button>
-    <button @click="editor.format('underline', !editor.getFormat().underline)">下划线</button>
-    <button @click="editor.format('strike', !editor.getFormat().strike)">删除线</button>
-    <button @click="editor.format('color', 'red')">有序列表</button>
-    <button @click="editor.format('color', 'red')">无序列表</button>
-    <button @click="editor.format('script', 'red')">上角标</button>
-    <button @click="editor.format('script', 'red')">下角标</button>
-    <button @click="editor.format('color', 'red')">行高</button>
-    <button @click="editor.format('color', 'red')">字间距</button>
-    <button @click="editor.removeFormat(editor.getSelection().index, editor.getSelection().length)">清除格式</button>
-  </div> -->
+  <div class="prosemirror-editor"></div>
+  <div class="content"></div>
 </template>
 
 <script>
-import { defineComponent, onMounted, reactive, ref } from 'vue'
-// import Quill from 'quill'
-// import 'quill/dist/quill.core.css'
+import { defineComponent, onMounted } from 'vue'
 
 import { EditorState } from 'prosemirror-state'
 import { EditorView } from 'prosemirror-view'
 import { Schema, DOMParser } from 'prosemirror-model'
-import { schema } from 'prosemirror-schema-basic'
+import { wrapIn } from 'prosemirror-commands'
 
 import { buildPlugins } from './plugins/index'
 import { schemaNodes, schemaMarks } from './schema/index'
@@ -41,37 +23,47 @@ import { schemaNodes, schemaMarks } from './schema/index'
 export default defineComponent({
   name: 'App',
   setup() {
-    // const editor = ref(null)
-
-    // onMounted(() => {
-    //   editor.value = new Quill('.quill-editor', {
-    //     modules: {
-    //       toolbar: null,
-    //     },
-    //   })
-    // })
-
-    // return {
-    //   editor,
-    // }
-
-    const mySchema = ref(null)
+    let view = null
 
     const initEditor = () => {
-      mySchema.value = new Schema({
+      const mySchema = new Schema({
         nodes: schemaNodes,
         marks: schemaMarks,
       })
-
-      new EditorView(document.querySelector('.prosemirror-editor'), {
+      view = new EditorView(document.querySelector('.prosemirror-editor'), {
         state: EditorState.create({
-          doc: DOMParser.fromSchema(mySchema.value).parse(document.querySelector('.content')),
-          plugins: buildPlugins(mySchema.value),
+          doc: DOMParser.fromSchema(mySchema).parse(document.querySelector('.content')),
+          plugins: buildPlugins(mySchema),
         }),
       })
     }
 
+    const deleteSelection = () => {
+      if(view.state.selection.empty) return false
+      if(view.dispatch) view.dispatchs(view.state.tr.deleteSelection())
+      view.focus()
+      return true
+    }
+
+    const clear = () => {
+      if(view.state.selection.empty) return false
+      const { $from, $to } = view.state.selection
+      if(view.dispatch) view.dispatch(view.state.tr.removeMark($from.pos, $to.pos, null))
+      view.focus()
+      return true
+    }
+
+    const setColor = () => {
+      return true
+    }
+
     onMounted(initEditor)
+
+    return {
+      deleteSelection,
+      clear,
+      setColor,
+    }
   },
 })
 </script>
