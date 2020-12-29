@@ -16,6 +16,8 @@
     <button class="btn" @click="setOrderedList()">有序列表</button>
     <button class="btn" @click="setBlockquote()">引用块</button>
     <button class="btn" @click="setCode()">行内代码</button>
+    <button class="btn" @click="setTextAlignLeft()">左对齐</button>
+    <button class="btn" @click="setTextAlignCenter()">中对齐</button>
     <button class="btn" @click="setTextAlignRight()">右对齐</button>
     <button class="btn" @click="clear()">清除样式</button>
   </div>
@@ -183,9 +185,120 @@ export default defineComponent({
       return true
     }
 
+    const BLOCKQUOTE = 'blockquote';
+    const BOOKMARK = 'bookmark';
+    const BULLET_LIST = 'bullet_list';
+    const CODE_BLOCK = 'code_block';
+    const DOC = 'doc';
+    const HARD_BREAK = 'hard_break';
+    const HEADING = 'heading';
+    const HORIZONTAL_RULE = 'horizontal_rule';
+    const IMAGE = 'image';
+    const LINK = 'link';
+    const LIST_ITEM = 'list_item';
+    const MATH = 'math';
+    const ORDERED_LIST = 'ordered_list';
+    const PARAGRAPH = 'paragraph';
+    const TABLE = 'table';
+    const TABLE_CELL = 'table_cell';
+    const TABLE_HEADER = 'table_header';
+    const TABLE_ROW = 'table_row';
+    const TEXT = 'text';
+    const UNDERLINE = 'underline';
+
+    function setTextAlign(
+      tr,
+      schema,
+      alignment
+    ) {
+      const {selection, doc} = tr;
+      console.log(1)
+      if (!selection || !doc) {
+        return tr;
+      }
+      const {from, to} = selection;
+      const {nodes} = schema;
+
+      const blockquote = nodes[BLOCKQUOTE];
+      const listItem = nodes[LIST_ITEM];
+      const heading = nodes[HEADING];
+      const paragraph = nodes[PARAGRAPH];
+
+      const tasks = [];
+      alignment = alignment || null;
+
+      const allowedNodeTypes = new Set([blockquote, heading, listItem, paragraph]);
+      console.log(2)
+      doc.nodesBetween(from, to, (node, pos, parentNode) => {
+        const nodeType = node.type;
+        const align = node.attrs.align || null;
+        if (align !== alignment && allowedNodeTypes.has(nodeType)) {
+          tasks.push({
+            node,
+            pos,
+            nodeType,
+          });
+        }
+        return true;
+      });
+      console.log(3)
+      if (!tasks.length) {
+        return tr;
+      }
+      console.log(4)
+      tasks.forEach(job => {
+        const {node, pos, nodeType} = job;
+        let {attrs} = node;
+        if (alignment) {
+          attrs = {
+            ...attrs,
+            align: alignment,
+          };
+        } else {
+          attrs = {
+            ...attrs,
+            align: null,
+          };
+        }
+        tr = tr.setNodeMarkup(pos, nodeType, attrs, node.marks);
+      });
+      console.log(tr)
+      return tr;
+    }
+
     const setTextAlignRight = () => {
-      const { $from, $to } = view.state.selection
-      setBlockType($from.pos, $to.pos, view.state.schema.nodes.alignment, { alignment: 'right' })(view.state, view.dispatch)
+      const {state} = view
+      const {schema, selection} = state;
+      const tr = setTextAlign(
+        state.tr.setSelection(selection),
+        schema,
+        'right'
+      )
+      view.dispatch(tr)
+      view.focus()
+    }
+
+    const setTextAlignLeft = () => {
+      const {state} = view
+      const {schema, selection} = state;
+      const tr = setTextAlign(
+        state.tr.setSelection(selection),
+        schema,
+        'left'
+      )
+      view.dispatch(tr)
+      view.focus()
+    }
+
+    const setTextAlignCenter = () => {
+      const {state} = view
+      const {schema, selection} = state;
+      const tr = setTextAlign(
+        state.tr.setSelection(selection),
+        schema,
+        'center'
+      )
+      view.dispatch(tr)
       view.focus()
     }
 
@@ -209,6 +322,8 @@ export default defineComponent({
       setBlockquote,
       setCode,
       setTextAlignRight,
+      setTextAlignLeft,
+      setTextAlignCenter,
       clear,
     }
   },

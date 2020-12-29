@@ -1,5 +1,36 @@
 import { marks } from 'prosemirror-schema-basic'
 
+
+
+function getAttrs(dom) {
+  const {
+    textAlign,
+  } = dom.style;
+
+  let align = dom.getAttribute('align') || textAlign || '';
+  align = ALIGN_PATTERN.test(align) ? align : null;
+
+  return {align};
+}
+
+function toDOM(node) {
+  const {
+    align,
+  } = node.attrs;
+  const attrs = {};
+
+  let style = '';
+  if (align && align !== 'left') {
+    style += `text-align: ${align};`;
+  }
+
+  style && (attrs.style = style);
+
+  return ['p', attrs, 0];
+}
+
+
+
 const subscript = {
   excludes: 'superscript',
   parseDOM: [
@@ -131,19 +162,12 @@ const letterspacing = {
 
 const textalign = {
   attrs: {
-    textalign: {
-      default: 'left',
-    },
+    align: {default: null},
   },
-  parseDOM: [
-    {
-      style: 'text-align',
-      getAttrs: textalign => textalign ? { textalign } : null
-    },
-  ],
-  toDOM: mark => {
-    return ['span', { style: `text-align: ${mark.attrs.textalign}; display:block;` }]
-  },
+  content: 'inline*',
+  group: 'block',
+  parseDOM: [{tag: 'p', getAttrs}],
+  toDOM,
 }
 
 export default {
