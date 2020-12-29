@@ -107,6 +107,60 @@ const fontname = {
   },
 }
 
+const lineheight = {
+  attrs: {
+    lineheight: {},
+  },
+  parseDOM: [
+    {
+      style: 'line-height',
+      getAttrs: lineheight => {
+        return lineheight ? { lineheight } : null
+      }
+    },
+  ],
+  toDOM: mark => {
+    return ['span', { style: `line-height: ${mark.attrs.lineheight};` }]
+  },
+}
+
+const letterspacing = {
+  attrs: {
+    letterspacing: {},
+  },
+  parseDOM: [
+    {
+      style: 'letter-spacing',
+      getAttrs: letterspacing => {
+        return letterspacing ? { letterspacing } : null
+      }
+    },
+  ],
+  toDOM: mark => {
+    return ['span', { style: `letter-spacing: ${mark.attrs.letterspacing};` }]
+  },
+}
+
+const textalign = {
+  attrs: {
+    textalign: 'left',
+  },
+  content: 'inline*',
+	group: 'block',
+	draggable: false,
+  parseDOM: [
+    {
+      style: 'text-align',
+      getAttrs: textalign => {
+        return textalign ? { textalign } : null
+      }
+    },
+  ],
+  toDOM: mark => {
+    return ['span', { style: `text-align: ${mark.attrs.textalign}; display:block;` }, 0]
+  },
+}
+
 export default {
   ...marks,
   subscript,
@@ -117,4 +171,7 @@ export default {
   backcolor,
   fontsize,
   fontname,
+  lineheight,
+  letterspacing,
+  textalign,
 }

@@ -10,15 +10,17 @@
     <button class="btn" @click="setBackcolor()">高亮</button>
     <button class="btn" @click="setFontsize()">字号</button>
     <button class="btn" @click="setFontname()">字体</button>
+    <button class="btn" @click="setLineheight()">行高</button>
+    <button class="btn" @click="setLetterspacing()">字间距</button>
     <button class="btn" @click="setBulletList()">无序列表</button>
     <button class="btn" @click="setOrderedList()">有序列表</button>
     <button class="btn" @click="setBlockquote()">引用块</button>
     <button class="btn" @click="setCode()">行内代码</button>
+    <button class="btn" @click="setTextAlignRight()">右对齐</button>
     <button class="btn" @click="clear()">清除样式</button>
   </div>
 
   <div class="prosemirror-editor"></div>
-  <div class="content" style="display: none;">9999999999999999999999999</div>
 </template>
 
 <script>
@@ -30,8 +32,24 @@ import { Schema, DOMParser } from 'prosemirror-model'
 import { wrapIn, toggleMark, setBlockType } from 'prosemirror-commands'
 import { wrapInList } from 'prosemirror-schema-list'
 
+import { toggleList } from './commands/toggleList'
+import { toggleBlockType } from './commands/toggleBlockType'
+import { updateMark } from './commands/updateMark'
+
 import { buildPlugins } from './plugins/index'
 import { schemaNodes, schemaMarks } from './schema/index'
+
+const mySchema = new Schema({
+  nodes: schemaNodes,
+  marks: schemaMarks,
+})
+
+const createDocument = content => {
+  const htmlString = `<div>${content}</div>`
+  const parser = new window.DOMParser()
+  const element = parser.parseFromString(htmlString, 'text/html').body.firstElementChild
+  return DOMParser.fromSchema(mySchema).parse(element)
+}
 
 export default defineComponent({
   name: 'App',
@@ -39,13 +57,9 @@ export default defineComponent({
     let view = null
 
     const initEditor = () => {
-      const mySchema = new Schema({
-        nodes: schemaNodes,
-        marks: schemaMarks,
-      })
       view = new EditorView(document.querySelector('.prosemirror-editor'), {
         state: EditorState.create({
-          doc: DOMParser.fromSchema(mySchema).parse(document.querySelector('.content')),
+          doc: createDocument('99999999999999999999999999999'),
           plugins: buildPlugins(mySchema),
         }),
       })
@@ -91,6 +105,22 @@ export default defineComponent({
       return true
     }
 
+    const setLineheight = () => {
+      const mark = view.state.schema.marks.lineheight.create({ lineheight: 1.8 })
+      const { $from, $to } = view.state.selection
+      view.dispatch(view.state.tr.addMark($from.pos, $to.pos, mark))
+      view.focus()
+      return true
+    }
+
+    const setLetterspacing = () => {
+      const mark = view.state.schema.marks.letterspacing.create({ letterspacing: '5px' })
+      const { $from, $to } = view.state.selection
+      view.dispatch(view.state.tr.addMark($from.pos, $to.pos, mark))
+      view.focus()
+      return true
+    }
+
     const setBold = () => {
       toggleMark(view.state.schema.marks.strong)(view.state, view.dispatch)
       view.focus()
@@ -128,15 +158,17 @@ export default defineComponent({
     }
 
     const setBulletList = () => {
-      wrapInList(view.state.schema.nodes.bullet_list)(view.state, view.dispatch)
+      const listType = view.state.schema.nodes.bullet_list
+      const itemType = view.state.schema.nodes.list_item
+      toggleList(listType, itemType)(view.state, view.dispatch, view)
       view.focus()
-      return true
     }
 
     const setOrderedList = () => {
-      wrapInList(view.state.schema.nodes.ordered_list)(view.state, view.dispatch)
+      const listType = view.state.schema.nodes.ordered_list
+      const itemType = view.state.schema.nodes.list_item
+      toggleList(listType, itemType)(view.state, view.dispatch, view)
       view.focus()
-      return true
     }
 
     const setBlockquote = () => {
@@ -149,6 +181,14 @@ export default defineComponent({
       toggleMark(view.state.schema.marks.code)(view.state, view.dispatch)
       view.focus()
       return true
+    }
+
+    const setTextAlignRight = () => {
+      updateMark(
+        view.state.schema.marks.textalign,
+        { textalign: 'right' }
+      )(view.state, view.dispatch)
+      view.focus()
     }
 
     onMounted(initEditor)
@@ -164,10 +204,13 @@ export default defineComponent({
       setBackcolor,
       setFontsize,
       setFontname,
+      setLineheight,
+      setLetterspacing,
       setBulletList,
       setOrderedList,
       setBlockquote,
       setCode,
+      setTextAlignRight,
       clear,
     }
   },
