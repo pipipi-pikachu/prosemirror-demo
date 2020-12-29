@@ -17,6 +17,20 @@ const listNodes = {
     content: 'paragraph block*',
     group: 'block',
   },
+
+  alignment: {
+    attrs: { alignment: { default: "left" } },
+    content: "block+",
+    group: "block",
+    defining: true,
+    parseDOM: [
+      {
+        style: 'text-align',
+        getAttrs: alignment => alignment ? { alignment } : null
+      },
+    ],
+    toDOM: node => ["p", { class: node.attrs.alignment }, 0]
+  },
 }
 
 export default {

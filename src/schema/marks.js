@@ -46,9 +46,7 @@ const forecolor = {
   parseDOM: [
     {
       style: 'color',
-      getAttrs: color => {
-        return color ? { color } : null
-      }
+      getAttrs: color => color ? { color } : null
     },
   ],
   toDOM: mark => {
@@ -63,9 +61,7 @@ const backcolor = {
   parseDOM: [
     {
       style: 'background-color',
-      getAttrs: backcolor => {
-        return backcolor ? { backcolor } : null
-      }
+      getAttrs: backcolor => backcolor ? { backcolor } : null
     },
   ],
   toDOM: mark => {
@@ -80,9 +76,7 @@ const fontsize = {
   parseDOM: [
     {
       style: 'font-size',
-      getAttrs: fontsize => {
-        return fontsize ? { fontsize } : null
-      }
+      getAttrs: fontsize => fontsize ? { fontsize } : null
     },
   ],
   toDOM: mark => {
@@ -97,9 +91,7 @@ const fontname = {
   parseDOM: [
     {
       style: 'font-family',
-      getAttrs: fontname => {
-        return fontname ? { fontname } : null
-      }
+      getAttrs: fontname => fontname ? { fontname } : null
     },
   ],
   toDOM: mark => {
@@ -114,9 +106,7 @@ const lineheight = {
   parseDOM: [
     {
       style: 'line-height',
-      getAttrs: lineheight => {
-        return lineheight ? { lineheight } : null
-      }
+      getAttrs: lineheight => lineheight ? { lineheight } : null
     },
   ],
   toDOM: mark => {
@@ -131,9 +121,7 @@ const letterspacing = {
   parseDOM: [
     {
       style: 'letter-spacing',
-      getAttrs: letterspacing => {
-        return letterspacing ? { letterspacing } : null
-      }
+      getAttrs: letterspacing => letterspacing ? { letterspacing } : null
     },
   ],
   toDOM: mark => {
@@ -143,21 +131,18 @@ const letterspacing = {
 
 const textalign = {
   attrs: {
-    textalign: 'left',
+    textalign: {
+      default: 'left',
+    },
   },
-  content: 'inline*',
-	group: 'block',
-	draggable: false,
   parseDOM: [
     {
       style: 'text-align',
-      getAttrs: textalign => {
-        return textalign ? { textalign } : null
-      }
+      getAttrs: textalign => textalign ? { textalign } : null
     },
   ],
   toDOM: mark => {
-    return ['span', { style: `text-align: ${mark.attrs.textalign}; display:block;` }, 0]
+    return ['span', { style: `text-align: ${mark.attrs.textalign}; display:block;` }]
   },
 }
 

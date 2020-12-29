@@ -184,10 +184,8 @@ export default defineComponent({
     }
 
     const setTextAlignRight = () => {
-      updateMark(
-        view.state.schema.marks.textalign,
-        { textalign: 'right' }
-      )(view.state, view.dispatch)
+      const { $from, $to } = view.state.selection
+      setBlockType($from.pos, $to.pos, view.state.schema.nodes.alignment, { alignment: 'right' })(view.state, view.dispatch)
       view.focus()
     }
 
