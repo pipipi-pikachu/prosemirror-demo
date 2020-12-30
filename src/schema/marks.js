@@ -1,73 +1,57 @@
 import { marks } from 'prosemirror-schema-basic'
 
-
-
-function getAttrs(dom) {
-  const {
-    textAlign,
-  } = dom.style;
-
-  let align = dom.getAttribute('align') || textAlign || '';
-  align = ALIGN_PATTERN.test(align) ? align : null;
-
-  return {align};
-}
-
-function toDOM(node) {
-  const {
-    align,
-  } = node.attrs;
-  const attrs = {};
-
-  let style = '';
-  if (align && align !== 'left') {
-    style += `text-align: ${align};`;
-  }
-
-  style && (attrs.style = style);
-
-  return ['p', attrs, 0];
-}
-
-
-
 const subscript = {
-  excludes: 'superscript',
+  excludes: 'subscript',
   parseDOM: [
     { tag: 'sub' },
-    { style: 'vertical-align=sub' },
+    {
+      style: 'vertical-align',
+      getAttrs: value => value === 'sub' && null
+    },
   ],
-  toDOM: () => ['sub'],
+  toDOM: () => ['sub', 0],
 }
 
 const superscript = {
-  excludes: 'subscript',
+  excludes: 'superscript',
   parseDOM: [
     { tag: 'sup' },
-    { style: 'vertical-align=super' },
+    {
+      style: 'vertical-align',
+      getAttrs: value => value === 'super' && null
+    },
   ],
-  toDOM: () => ['sup'],
+  toDOM: () => ['sup', 0],
 }
 
 const strikethrough = {
   parseDOM: [
     { tag: 'strike' },
-    { style: 'text-decoration:line-through' },
-    { style: 'text-decoration-line:line-through' },
+    {
+      style: 'text-decoration',
+      getAttrs: value => value === 'line-through' && null
+    },
+    {
+      style: 'text-decoration-line',
+      getAttrs: value => value === 'line-through' && null
+    },
   ],
-  toDOM: () => ['span', {
-    style: 'text-decoration-line:line-through',
-  }],
+  toDOM: () => ['span', { style: 'text-decoration-line: line-through' }, 0],
 }
 
 const underline = {
   parseDOM: [
     { tag: 'u' },
-    { style: 'text-decoration:underline' },
+    {
+      style: 'text-decoration',
+      getAttrs: value => value === 'underline' && null
+    },
+    {
+      style: 'text-decoration-line',
+      getAttrs: value => value === 'underline' && null
+    },
   ],
-  toDOM: () => ['span', {
-    style: 'text-decoration:underline',
-  }],
+  toDOM: () => ['span', { style: 'text-decoration: underline' }, 0],
 }
 
 const forecolor = {
@@ -77,11 +61,14 @@ const forecolor = {
   parseDOM: [
     {
       style: 'color',
-      getAttrs: color => color ? { color } : null
+      getAttrs: color => color ? { color } : {}
     },
   ],
-  toDOM: mark => {
-    return ['span', { style: `color: ${mark.attrs.color};` }]
+  toDOM: node => {
+    const { color } = node.attrs
+    let style = ''
+    if(color) style += `color: ${color};`
+    return ['span', { style }, 0]
   },
 }
 
@@ -89,14 +76,19 @@ const backcolor = {
   attrs: {
     backcolor: {},
   },
+  inline: true,
+  group: 'inline',
   parseDOM: [
     {
-      style: 'background-color',
-      getAttrs: backcolor => backcolor ? { backcolor } : null
+      tag: 'span[style*=background-color]',
+      getAttrs: backcolor => backcolor ? { backcolor } : {}
     },
   ],
-  toDOM: mark => {
-    return ['span', { style: `background-color: ${mark.attrs.backcolor};` }]
+  toDOM: node => {
+    const { backcolor } = node.attrs
+    let style = ''
+    if(backcolor) style += `background-color: ${backcolor};`
+    return ['span', { style }, 0]
   },
 }
 
@@ -104,70 +96,40 @@ const fontsize = {
   attrs: {
     fontsize: {},
   },
+  inline: true,
+  group: 'inline',
   parseDOM: [
     {
       style: 'font-size',
-      getAttrs: fontsize => fontsize ? { fontsize } : null
+      getAttrs: fontsize => fontsize ? { fontsize } : {}
     },
   ],
-  toDOM: mark => {
-    return ['span', { style: `font-size: ${mark.attrs.fontsize};` }]
+  toDOM: node => {
+    const { fontsize } = node.attrs
+    const attrs = {}
+    if(fontsize) attrs.style = `font-size: ${fontsize}`
+    return ['span', attrs, 0]
   },
 }
 
 const fontname = {
   attrs: {
-    fontname: {},
+    fontname: '',
   },
+  inline: true,
+  group: 'inline',
   parseDOM: [
     {
       style: 'font-family',
-      getAttrs: fontname => fontname ? { fontname } : null
+      getAttrs: fontname => ({ fontname: fontname ? fontname.replace(/[\"\']/g, '') : '' })
     },
   ],
-  toDOM: mark => {
-    return ['span', { style: `font-family: ${mark.attrs.fontname};` }]
+  toDOM: node => {
+    const { fontname } = node.attrs
+    const attrs = {}
+    if(fontname) attrs.style = `font-family: ${fontname}`
+    return ['span', attrs, 0]
   },
-}
-
-const lineheight = {
-  attrs: {
-    lineheight: {},
-  },
-  parseDOM: [
-    {
-      style: 'line-height',
-      getAttrs: lineheight => lineheight ? { lineheight } : null
-    },
-  ],
-  toDOM: mark => {
-    return ['span', { style: `line-height: ${mark.attrs.lineheight};` }]
-  },
-}
-
-const letterspacing = {
-  attrs: {
-    letterspacing: {},
-  },
-  parseDOM: [
-    {
-      style: 'letter-spacing',
-      getAttrs: letterspacing => letterspacing ? { letterspacing } : null
-    },
-  ],
-  toDOM: mark => {
-    return ['span', { style: `letter-spacing: ${mark.attrs.letterspacing};` }]
-  },
-}
-
-const textalign = {
-  attrs: {
-    align: {default: null},
-  },
-  content: 'inline*',
-  group: 'block',
-  parseDOM: [{tag: 'p', getAttrs}],
-  toDOM,
 }
 
 export default {
@@ -180,7 +142,4 @@ export default {
   backcolor,
   fontsize,
   fontname,
-  lineheight,
-  letterspacing,
-  textalign,
 }

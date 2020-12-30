@@ -10,15 +10,13 @@
     <button class="btn" @click="setBackcolor()">高亮</button>
     <button class="btn" @click="setFontsize()">字号</button>
     <button class="btn" @click="setFontname()">字体</button>
-    <button class="btn" @click="setLineheight()">行高</button>
-    <button class="btn" @click="setLetterspacing()">字间距</button>
     <button class="btn" @click="setBulletList()">无序列表</button>
     <button class="btn" @click="setOrderedList()">有序列表</button>
     <button class="btn" @click="setBlockquote()">引用块</button>
     <button class="btn" @click="setCode()">行内代码</button>
-    <button class="btn" @click="setTextAlignLeft()">左对齐</button>
-    <button class="btn" @click="setTextAlignCenter()">中对齐</button>
-    <button class="btn" @click="setTextAlignRight()">右对齐</button>
+    <button class="btn" @click="setTextAlign('left')">左对齐</button>
+    <button class="btn" @click="setTextAlign('center')">中对齐</button>
+    <button class="btn" @click="setTextAlign('right')">右对齐</button>
     <button class="btn" @click="clear()">清除样式</button>
   </div>
 
@@ -31,12 +29,10 @@ import { defineComponent, onMounted } from 'vue'
 import { EditorState } from 'prosemirror-state'
 import { EditorView } from 'prosemirror-view'
 import { Schema, DOMParser } from 'prosemirror-model'
-import { wrapIn, toggleMark, setBlockType } from 'prosemirror-commands'
-import { wrapInList } from 'prosemirror-schema-list'
+import { wrapIn, toggleMark } from 'prosemirror-commands'
 
 import { toggleList } from './commands/toggleList'
-import { toggleBlockType } from './commands/toggleBlockType'
-import { updateMark } from './commands/updateMark'
+import { alignmentCommand } from './commands/setTextAlign'
 
 import { buildPlugins } from './plugins/index'
 import { schemaNodes, schemaMarks } from './schema/index'
@@ -72,7 +68,6 @@ export default defineComponent({
       const { $from, $to } = view.state.selection
       view.dispatch(view.state.tr.removeMark($from.pos, $to.pos, null))
       view.focus()
-      return true
     }
 
     const setForecolor = () => {
@@ -80,7 +75,6 @@ export default defineComponent({
       const { $from, $to } = view.state.selection
       view.dispatch(view.state.tr.addMark($from.pos, $to.pos, mark))
       view.focus()
-      return true
     }
 
     const setBackcolor = () => {
@@ -88,7 +82,6 @@ export default defineComponent({
       const { $from, $to } = view.state.selection
       view.dispatch(view.state.tr.addMark($from.pos, $to.pos, mark))
       view.focus()
-      return true
     }
 
     const setFontsize = () => {
@@ -96,7 +89,6 @@ export default defineComponent({
       const { $from, $to } = view.state.selection
       view.dispatch(view.state.tr.addMark($from.pos, $to.pos, mark))
       view.focus()
-      return true
     }
 
     const setFontname = () => {
@@ -104,201 +96,62 @@ export default defineComponent({
       const { $from, $to } = view.state.selection
       view.dispatch(view.state.tr.addMark($from.pos, $to.pos, mark))
       view.focus()
-      return true
-    }
-
-    const setLineheight = () => {
-      const mark = view.state.schema.marks.lineheight.create({ lineheight: 1.8 })
-      const { $from, $to } = view.state.selection
-      view.dispatch(view.state.tr.addMark($from.pos, $to.pos, mark))
-      view.focus()
-      return true
-    }
-
-    const setLetterspacing = () => {
-      const mark = view.state.schema.marks.letterspacing.create({ letterspacing: '5px' })
-      const { $from, $to } = view.state.selection
-      view.dispatch(view.state.tr.addMark($from.pos, $to.pos, mark))
-      view.focus()
-      return true
     }
 
     const setBold = () => {
       toggleMark(view.state.schema.marks.strong)(view.state, view.dispatch)
       view.focus()
-      return true
     }
 
     const setItalics = () => {
       toggleMark(view.state.schema.marks.em)(view.state, view.dispatch)
       view.focus()
-      return true
     }
 
     const setUnderline = () => {
       toggleMark(view.state.schema.marks.underline)(view.state, view.dispatch)
       view.focus()
-      return true
     }
 
     const setStrikeThrough = () => {
       toggleMark(view.state.schema.marks.strikethrough)(view.state, view.dispatch)
       view.focus()
-      return true
     }
 
     const setSubscript = () => {
       toggleMark(view.state.schema.marks.subscript)(view.state, view.dispatch)
       view.focus()
-      return true
     }
 
     const setSuperscript = () => {
       toggleMark(view.state.schema.marks.superscript)(view.state, view.dispatch)
       view.focus()
-      return true
     }
 
     const setBulletList = () => {
-      const listType = view.state.schema.nodes.bullet_list
-      const itemType = view.state.schema.nodes.list_item
-      toggleList(listType, itemType)(view.state, view.dispatch, view)
+      const { bullet_list, list_item } = view.state.schema.nodes
+      toggleList(bullet_list, list_item)(view.state, view.dispatch, view)
       view.focus()
     }
 
     const setOrderedList = () => {
-      const listType = view.state.schema.nodes.ordered_list
-      const itemType = view.state.schema.nodes.list_item
-      toggleList(listType, itemType)(view.state, view.dispatch, view)
+      const { ordered_list, list_item } = view.state.schema.nodes
+      toggleList(ordered_list, list_item)(view.state, view.dispatch, view)
       view.focus()
     }
 
     const setBlockquote = () => {
       wrapIn(view.state.schema.nodes.blockquote)(view.state, view.dispatch)
       view.focus()
-      return true
     }
 
     const setCode = () => {
       toggleMark(view.state.schema.marks.code)(view.state, view.dispatch)
       view.focus()
-      return true
     }
 
-    const BLOCKQUOTE = 'blockquote';
-    const BOOKMARK = 'bookmark';
-    const BULLET_LIST = 'bullet_list';
-    const CODE_BLOCK = 'code_block';
-    const DOC = 'doc';
-    const HARD_BREAK = 'hard_break';
-    const HEADING = 'heading';
-    const HORIZONTAL_RULE = 'horizontal_rule';
-    const IMAGE = 'image';
-    const LINK = 'link';
-    const LIST_ITEM = 'list_item';
-    const MATH = 'math';
-    const ORDERED_LIST = 'ordered_list';
-    const PARAGRAPH = 'paragraph';
-    const TABLE = 'table';
-    const TABLE_CELL = 'table_cell';
-    const TABLE_HEADER = 'table_header';
-    const TABLE_ROW = 'table_row';
-    const TEXT = 'text';
-    const UNDERLINE = 'underline';
-
-    function setTextAlign(
-      tr,
-      schema,
-      alignment
-    ) {
-      const {selection, doc} = tr;
-      console.log(1)
-      if (!selection || !doc) {
-        return tr;
-      }
-      const {from, to} = selection;
-      const {nodes} = schema;
-
-      const blockquote = nodes[BLOCKQUOTE];
-      const listItem = nodes[LIST_ITEM];
-      const heading = nodes[HEADING];
-      const paragraph = nodes[PARAGRAPH];
-
-      const tasks = [];
-      alignment = alignment || null;
-
-      const allowedNodeTypes = new Set([blockquote, heading, listItem, paragraph]);
-      console.log(2)
-      doc.nodesBetween(from, to, (node, pos, parentNode) => {
-        const nodeType = node.type;
-        const align = node.attrs.align || null;
-        if (align !== alignment && allowedNodeTypes.has(nodeType)) {
-          tasks.push({
-            node,
-            pos,
-            nodeType,
-          });
-        }
-        return true;
-      });
-      console.log(3)
-      if (!tasks.length) {
-        return tr;
-      }
-      console.log(4)
-      tasks.forEach(job => {
-        const {node, pos, nodeType} = job;
-        let {attrs} = node;
-        if (alignment) {
-          attrs = {
-            ...attrs,
-            align: alignment,
-          };
-        } else {
-          attrs = {
-            ...attrs,
-            align: null,
-          };
-        }
-        tr = tr.setNodeMarkup(pos, nodeType, attrs, node.marks);
-      });
-      console.log(tr)
-      return tr;
-    }
-
-    const setTextAlignRight = () => {
-      const {state} = view
-      const {schema, selection} = state;
-      const tr = setTextAlign(
-        state.tr.setSelection(selection),
-        schema,
-        'right'
-      )
-      view.dispatch(tr)
-      view.focus()
-    }
-
-    const setTextAlignLeft = () => {
-      const {state} = view
-      const {schema, selection} = state;
-      const tr = setTextAlign(
-        state.tr.setSelection(selection),
-        schema,
-        'left'
-      )
-      view.dispatch(tr)
-      view.focus()
-    }
-
-    const setTextAlignCenter = () => {
-      const {state} = view
-      const {schema, selection} = state;
-      const tr = setTextAlign(
-        state.tr.setSelection(selection),
-        schema,
-        'center'
-      )
-      view.dispatch(tr)
+    const setTextAlign = alignment => {
+      alignmentCommand(view, alignment)
       view.focus()
     }
 
@@ -315,15 +168,11 @@ export default defineComponent({
       setBackcolor,
       setFontsize,
       setFontname,
-      setLineheight,
-      setLetterspacing,
       setBulletList,
       setOrderedList,
       setBlockquote,
       setCode,
-      setTextAlignRight,
-      setTextAlignLeft,
-      setTextAlignCenter,
+      setTextAlign,
       clear,
     }
   },
@@ -339,5 +188,26 @@ export default defineComponent({
   outline: 0;
   border: 1px solid #888;
   padding: 10px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+.ProseMirror p + p {
+  margin-top: 5px;
+}
+
+ul {
+  list-style-type: disc;
+  padding-inline-start: 20px;
+}
+ul li {
+  list-style-type: disc;
+}
+
+ol {
+  list-style-type: decimal;
+  padding-inline-start: 20px;
+}
+ol li {
+  list-style-type: decimal;
 }
 </style>
