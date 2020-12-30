@@ -1,22 +1,6 @@
 import { wrapInList, liftListItem } from 'prosemirror-schema-list'
+import { findParentNode } from '../utils'
 
-const findParentNodeClosestToPos = ($pos, predicate) => {
-  for(let i = $pos.depth; i > 0; i--) {
-    const node = $pos.node(i)
-    if(predicate(node)) {
-      return {
-        pos: i > 0 ? $pos.before(i) : 0,
-        start: $pos.start(i),
-        depth: i,
-        node,
-      }
-    }
-  }
-}
-
-const findParentNode = (predicate) => {
-  return _ref => findParentNodeClosestToPos(_ref.$from, predicate)
-}
 
 const isList = (node, schema) => {
   return (

@@ -21,6 +21,8 @@
   </div>
 
   <div class="prosemirror-editor"></div>
+
+  <button @click="getAttrs()">获取光标处焦点信息</button>
 </template>
 
 <script>
@@ -30,6 +32,7 @@ import { EditorState } from 'prosemirror-state'
 import { EditorView } from 'prosemirror-view'
 import { Schema, DOMParser } from 'prosemirror-model'
 import { wrapIn, toggleMark } from 'prosemirror-commands'
+import { findParentNodeOfType } from './utils'
 
 import { toggleList } from './commands/toggleList'
 import { alignmentCommand } from './commands/setTextAlign'
@@ -157,6 +160,84 @@ export default defineComponent({
 
     onMounted(initEditor)
 
+    const isActiveOfParentNodeType = (nodeType, state) => {
+      const node = state.schema.nodes[nodeType]
+      return !!findParentNodeOfType(node)(state.selection)
+    }
+
+    const getMarkAttrs = () => {
+      const { selection, doc } = view.state
+      const { from } = selection
+      const node = doc.nodeAt(from)
+      return node.marks
+    }
+
+    const getAttrValue = (markType, attr) => {
+      const marks = getMarkAttrs()
+      for(const mark of marks) {
+        if(mark.type.name === markType && mark.attrs[attr]) return mark.attrs[attr]
+      }
+      return null
+    }
+
+    const isActiveMark = markType => {
+      const marks = getMarkAttrs()
+      for(const mark of marks) {
+        if(mark.type.name === markType) return true
+      }
+      return false
+    }
+
+    const getAttrValueInSelection = attr => {
+      const { selection, doc } = view.state
+      const { from, to } = selection
+
+      let keepChecking = true
+      let value = ''
+      doc.nodesBetween(from, to, node => {
+        if(keepChecking && node.attrs[attr]) {
+          keepChecking = false
+          value = node.attrs[attr]
+        }
+        return keepChecking
+      })
+      return value
+    }
+
+    const getAttrs = () => {
+      const isBold = isActiveMark('strong')
+      const isEm = isActiveMark('em')
+      const isUnderline = isActiveMark('underline')
+      const isStrikethrough = isActiveMark('strikethrough')
+      const isSuperscript = isActiveMark('superscript')
+      const isSubscript = isActiveMark('subscript')
+      const isCode = isActiveMark('code')
+      const color = getAttrValue('forecolor', 'color')
+      const backcolor = getAttrValue('backcolor', 'backcolor')
+      const fontsize = getAttrValue('fontsize', 'fontsize')
+      const fontname = getAttrValue('fontname', 'fontname')
+      const align = getAttrValueInSelection('align')
+      const isBulletList = isActiveOfParentNodeType('bullet_list', view.state)
+      const isOrderedList = isActiveOfParentNodeType('ordered_list', view.state)
+      const isBlockquote = isActiveOfParentNodeType('blockquote', view.state)
+
+      console.log('isBold: ', isBold)
+      console.log('isEm: ', isEm)
+      console.log('isUnderline: ', isUnderline)
+      console.log('isStrikethrough: ', isStrikethrough)
+      console.log('isSuperscript: ', isSuperscript)
+      console.log('isSubscript: ', isSubscript)
+      console.log('isCode: ', isCode)
+      console.log('color: ', color)
+      console.log('backcolor: ', backcolor)
+      console.log('fontsize: ', fontsize)
+      console.log('fontname: ', fontname)
+      console.log('align: ', align)
+      console.log('isBulletList: ', isBulletList)
+      console.log('isOrderedList: ', isOrderedList)
+      console.log('isBlockquote: ', isBlockquote)
+    }
+
     return {
       setBold,
       setItalics,
@@ -174,6 +255,7 @@ export default defineComponent({
       setCode,
       setTextAlign,
       clear,
+      getAttrs,
     }
   },
 })
