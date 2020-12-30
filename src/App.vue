@@ -210,4 +210,22 @@ ol {
 ol li {
   list-style-type: decimal;
 }
+
+code {
+  background-color: #eee;
+  padding: 1px 3px;
+  margin: 0 1px;
+  border-radius: 2px;
+  font-family: inherit;
+}
+
+blockquote {
+  overflow: hidden;
+  padding-right: 1.2em;
+  padding-left: 1.2em;
+  margin-left: 0;
+  margin-right: 0;
+  font-style: italic;
+  border-left: 5px solid #ccc;
+}
 </style>
