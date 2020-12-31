@@ -6,10 +6,12 @@
     <button class="btn" @click="setStrikeThrough()">删除线</button>
     <button class="btn" @click="setSubscript()">下标</button>
     <button class="btn" @click="setSuperscript()">上标</button>
-    <button class="btn" @click="setForecolor()">颜色</button>
-    <button class="btn" @click="setBackcolor()">高亮</button>
-    <button class="btn" @click="setFontsize()">字号</button>
-    <button class="btn" @click="setFontname()">字体</button>
+    <button class="btn" @click="setForecolor('blue')">颜色-蓝</button>
+    <button class="btn" @click="setForecolor('red')">颜色-红</button>
+    <button class="btn" @click="setBackcolor('yellow')">高亮</button>
+    <button class="btn" @click="setFontsize('22px')">字号-22</button>
+    <button class="btn" @click="setFontsize('28px')">字号-28</button>
+    <button class="btn" @click="setFontname('宋体')">字体</button>
     <button class="btn" @click="setBulletList()">无序列表</button>
     <button class="btn" @click="setOrderedList()">有序列表</button>
     <button class="btn" @click="setBlockquote()">引用块</button>
@@ -36,6 +38,7 @@ import { findParentNodeOfType } from './utils'
 
 import { toggleList } from './commands/toggleList'
 import { alignmentCommand } from './commands/setTextAlign'
+import { applyMark } from './commands/applyMark'
 
 import { buildPlugins } from './plugins/index'
 import { schemaNodes, schemaMarks } from './schema/index'
@@ -73,31 +76,31 @@ export default defineComponent({
       view.focus()
     }
 
-    const setForecolor = () => {
-      const mark = view.state.schema.marks.forecolor.create({ color: 'red' })
+    const setForecolor = (value) => {
+      const mark = view.state.schema.marks.forecolor.create({ color: value })
       const { $from, $to } = view.state.selection
       view.dispatch(view.state.tr.addMark($from.pos, $to.pos, mark))
       view.focus()
     }
 
-    const setBackcolor = () => {
-      const mark = view.state.schema.marks.backcolor.create({ backcolor: 'yellow' })
+    const setBackcolor = (value) => {
+      const mark = view.state.schema.marks.backcolor.create({ backcolor: value })
       const { $from, $to } = view.state.selection
       view.dispatch(view.state.tr.addMark($from.pos, $to.pos, mark))
       view.focus()
     }
 
-    const setFontsize = () => {
-      const mark = view.state.schema.marks.fontsize.create({ fontsize: '22px' })
-      const { $from, $to } = view.state.selection
-      view.dispatch(view.state.tr.addMark($from.pos, $to.pos, mark))
+    const setFontsize = (value) => {
+      const markType = view.state.schema.marks.fontsize
+      const tr = applyMark(view.state.tr.setSelection(view.state.selection), markType, { fontsize: value })
+      view.dispatch(tr)
       view.focus()
     }
 
-    const setFontname = () => {
-      const mark = view.state.schema.marks.fontname.create({ fontname: '宋体' })
-      const { $from, $to } = view.state.selection
-      view.dispatch(view.state.tr.addMark($from.pos, $to.pos, mark))
+    const setFontname = (value) => {
+      const markType = view.state.schema.marks.fontname
+      const tr = applyMark(view.state.tr.setSelection(view.state.selection), markType, { fontname: value })
+      view.dispatch(tr)
       view.focus()
     }
 
